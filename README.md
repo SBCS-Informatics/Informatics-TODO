@@ -1,7 +1,7 @@
 # SBCS-Informatics TODO
 
 ###Bash_extensions
-- TODO: Fix Dir History
+- TODO: TEST...
 - Provides users with ZSH as default shell with helpful defaults & aliases
 - Comes with access to commonly used general and biological software (typically the latest versions)
 
@@ -30,7 +30,7 @@ brew install star htslib bamtools mafft bedops blast newick-utils emboss prank b
 - Other potential packages
 
 ```sh
-curl wget ssh-copy-id awscli pandoc heroku-toolbelt htop links n pandoc-citeproc unison imagemagick parallel pv aircrack-ng ircii boot2docker lftp gcc cmake youtube-dl chktex latex2rtf lftp ncftp gd unrar tmux sshfs
+curl wget htop parallel pv ssh-copy-id pandoc  links pandoc-citeproc unison ircii lftp gcc cmake imagemagick youtube-dl chktex latex2rtf lftp ncftp gd unrar tmux sshfs
 ```
 
 ### Set up multi-user Virtual env for Ruby, python, perl, R
