@@ -1,0 +1,4 @@
+* * * * * /data/home/btw977/monitoring/scripts/ps_cron.sh > /dev/null 
+# Runs once per minute 
+#5 4 * * 0 /data/home/btw977/monitoring/scripts/ps_cron_log.sh > /dev/null 
+# Runs at 04:05 AM on Sundays. THIS BIT ONLY RUNS ON FRONTEND 6
