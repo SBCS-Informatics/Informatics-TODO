@@ -5,5 +5,5 @@
 #In order to load all modules
 #source module_load_sbcs_latest
 
-`./module_load_sbcs_latest.py` 2> /dev/null
+`/data/SBCS-Informatics/utilities/module_load_sbcs_latest.py` 2> /dev/null
 
