@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+#
+#Wrapper for python script to get env variables to persist.
+#Author: Adrian Larkeryd, 2016
+#In order to load all modules
+#source module_load_sbcs_latest
+
+`./module_load_sbcs_latest.py` 2> /dev/null
+
