@@ -32,13 +32,13 @@ def print_usage(ps_file):
         #print group_key, group_total
     
     for group in sorted(group_totals, key=group_totals.get, reverse=True):
-        print group, group_totals[group]
+        print "%16s %8sh %8s%s"%(group, str(round(group_totals[group], 1)), str(round(group_totals[group]/6720*100, 1)), "%")
     
     print "\nOTHER USERS:"
     #printing the usage of any users which are not assigned to a research group
     for user in sorted(all_processes_by_user, key=all_processes_by_user.get, reverse=True):
         if user not in non_users:
-            print user, all_processes_by_user[user]/100.0/60.0
+            print "%16s %8sh %8s%s"%(user, str(round(all_processes_by_user[user]/100.0/60.0, 1)), str(round(all_processes_by_user[user]/100.0/60.0/6720*100, 1)), "%")
 
 if __name__ == "__main__":
     #this runs only if this script is the main script, ie not if imported. 

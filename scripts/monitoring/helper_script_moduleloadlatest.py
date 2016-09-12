@@ -16,14 +16,19 @@ list_of_softwares = [
         "samtools",
         "bamtools", 
         "bedtools",
+        "bcftools",
+        "vcftools",
+        "sratoolkit",
         "blast+",
         "htop",
         "parallel",
-        "bcftools",
         "SOAP",
         "bowtie",
         "mrbayes",
         "velvet",
+        "mothur",
+        "blat",
+        "mafft",
         "R",
         "muscle", 
         "clustal",
@@ -32,9 +37,9 @@ list_of_softwares = [
 
 dict_of_versions = dict()
 
-os.system("modulecmd bash avail -l 2> /data/SBCS-Informatics/test/moduleloadtest")
+os.system("modulecmd bash avail -l 2> /data/SBCS-Informatics/utilities/moduleloadlist")
 
-f=open("/data/SBCS-Informatics/test/moduleloadtest", "r")
+f=open("/data/SBCS-Informatics/utilities/moduleloadlist", "r")
 
 for line in f.readlines():
     line_split = line.split()
@@ -65,5 +70,5 @@ for software in dict_of_versions.keys():
         #print result
     del list_of_softwares[list_of_softwares.index(software)]
 
-if len(list_of_softwares) != 0:
-    print "leftovers", list_of_softwares
+#if len(list_of_softwares) != 0:
+#    print "leftovers", list_of_softwares
