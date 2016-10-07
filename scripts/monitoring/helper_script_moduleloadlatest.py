@@ -32,7 +32,8 @@ list_of_softwares = [
         "R",
         "muscle", 
         "clustal",
-        "RAxML"
+        "RAxML",
+        "seqtk"
         ] 
 
 dict_of_versions = dict()
