@@ -14,7 +14,7 @@ def print_usage(ps_file):
     
     for line in ps_file:
         l_split = line.split()
-        if not len(l_split) < 2 and not l_split[0] == 'USER':
+        if not len(l_split) < 2 and not l_split[0] == 'USER' and not line[0] == ' ':
             if l_split[0] not in all_processes_by_user.keys():
                 all_processes_by_user[l_split[0]] = 0.0
             if float(l_split[2]) > 5.0:
