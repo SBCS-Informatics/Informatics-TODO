@@ -1,8 +1,17 @@
 #!/usr/bin/env python
 import sys, time, argparse, os, hashlib
+from pwd import getpwuid
 from multiprocessing import Pool
 
 NUM_THREADS=8
+WRITE_HASH_TO_FILE=1
+
+##used for binary test. not fool proof but good enough for this use case
+##taken from https://stackoverflow.com/questions/898669/how-can-i-detect-if-a-file-is-binary-non-text-in-python
+textchars = bytearray({7,8,9,10,12,13,27} | set(range(0x20, 0x100)) - {0x7f})
+def is_binary(filename):
+    file_part = open(filename, 'rb').read(1024)
+    return bool(file_part.translate(None, textchars))
 
 ##main function
 def main():
@@ -23,6 +32,13 @@ def main():
     list_of_files = find_all_files(root)
     print len(list_of_files), "files"
 
+    #for f in list_of_files:
+    #    if is_binary(f):
+    #        print f, "binary"
+    #    else:
+    #        print f, "NONbinary"
+    
+    
     list_of_hashes = multithread_run(hash_file, list_of_files)
     
     file_dict=dict()
@@ -47,17 +63,14 @@ def main():
     tmp_file_list = find_tmp_files(list_of_files)
     print len(tmp_file_list), "tmp files"
     print round(time.time()-t_zero), "seconds"
-    #for f in list_of_files:
-    #    size = calc_size(f)
-    #    hash_value = hash_file(f)
-    #    print size, hash_value
-    #time end
 
 def multithread_run(func_to_run, args_list):
     pool = Pool(processes=NUM_THREADS)
     results_list = list()
     
     for i in pool.imap_unordered(func_to_run, args_list):
+        if WRITE_HASH_TO_FILE:
+            pass
         results_list.append(i)
     return results_list
 
@@ -68,6 +81,9 @@ def size_of_dups(dups):
         reduced_size+=float(dups[key][0])
         total_size+=float(dups[key][0])*(len(dups[key])-1)
     return (total_size, reduced_size)
+
+def get_uid(filename):
+    return getpwuid(stat(filename).st_uid).pw_name
 
 def find_all_files(root):
     list_of_files=list()
