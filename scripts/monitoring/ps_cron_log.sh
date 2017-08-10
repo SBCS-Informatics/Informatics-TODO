@@ -6,7 +6,7 @@
 #2016
 
 startdate=`head -n1 /data/SBCS-Informatics/monitoring/sm11_monitoring.txt`
-enddate=`date +"%m_%d_%Y_%H-%M"`
+enddate=`date +"%Y_%m_%d_%H-%M"`
 #naming
 
 mv /data/SBCS-Informatics/monitoring/sm11_monitoring.txt /data/SBCS-Informatics/monitoring/old_logs/sm11_monitoring_${enddate}.txt

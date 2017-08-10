@@ -11,4 +11,4 @@
 echo "Running on: `hostname`."
 echo "Text files that are larger than 100mb and haven't been touched in a while"
 echo "---"
-find /data/omicsScratch -mtime +30 -size +100M -exec grep -Iq . '{}' \; -exec du -h '{}' \; > /data/SBCS-Informatics/monitoring/cleanup_survey/large_nonbinary_omicsScratch_`date +"%m_%d_%Y_%H-%M"`.log
+find /data/omicsScratch -mtime +30 -size +100M -exec grep -Iq . '{}' \; -exec du -h '{}' \; > /data/SBCS-Informatics/monitoring/cleanup_survey/large_nonbinary_omicsScratch_`date +"%Y_%m_%d_%H-%M"`.log
