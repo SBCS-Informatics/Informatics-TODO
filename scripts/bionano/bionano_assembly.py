@@ -36,6 +36,8 @@ parser.add_argument("--optargs", metavar=("FP", "FN", "sd", "sf", "sr"),
         help="optArgs in space separated list in order", nargs=5)
 parser.add_argument("--optargs_file",
         help="path to the optargs file that is used (and changed if --optargs is specified)", default=PATH_TO_OPTARGS)
+parser.add_argument("--reference",
+        help="reference .cmap file, for comparison")
 parser.add_argument("--refaligner",
         help="path to the refaligner binaries directory", default=PATH_TO_REFALIGNER)
 parser.add_argument("--pipelineCL",
@@ -90,7 +92,10 @@ if args.optargs:
         if args.verbose:
             print logtmp
 
-command = "/share/apps/iryssolve/utils/drmaapywrapper.sh {} -l {} -a {} -b {} -t {} -C {} -T 32 -j 16".format(args.pipelineCL, args.output, args.optargs_file, args.input, args.refaligner, args.clusterargs)
+if args.reference:
+    command = "/share/apps/iryssolve/utils/drmaapywrapper.sh {} -l {} -a {} -b {} -t {} -C {} -T -r {} 32 -j 16".format(args.pipelineCL, args.output, args.optargs_file, args.input, args.refaligner, args.clusterargs, args.reference)
+else:
+    command = "/share/apps/iryssolve/utils/drmaapywrapper.sh {} -l {} -a {} -b {} -t {} -C {} -T 32 -j 16".format(args.pipelineCL, args.output, args.optargs_file, args.input, args.refaligner, args.clusterargs)
 
 #run command
 if args.verbose:
