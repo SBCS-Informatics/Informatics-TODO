@@ -11,7 +11,7 @@ enddate=`date +"%Y_%m_%d_%H-%M"`
 
 mv /data/SBCS-Informatics/monitoring/sm11_monitoring.txt /data/SBCS-Informatics/monitoring/old_logs/sm11_monitoring_${enddate}.txt
 mv /data/SBCS-Informatics/monitoring/frontend5.apocrita_monitoring.txt /data/SBCS-Informatics/monitoring/old_logs/frontend5.apocrita_monitoring_${enddate}.txt
-mv /data/SBCS-Informatics/monitoring/frontend6.apocrita_monitoring.txt /data/SBCS-Informatics/monitoring/old_logs/frontend6.apocrita_monitoring_${enddate}.txt
+mv /data/SBCS-Informatics/monitoring/frontend6_monitoring.txt /data/SBCS-Informatics/monitoring/old_logs/frontend6_monitoring_${enddate}.txt
 #move the logs
 
 cd /data/SBCS-Informatics/monitoring/old_logs/
@@ -21,7 +21,7 @@ cd /data/SBCS-Informatics/monitoring/old_logs/
 
 gzip /data/SBCS-Informatics/monitoring/old_logs/sm11_monitoring_${enddate}.txt
 gzip /data/SBCS-Informatics/monitoring/old_logs/frontend5.apocrita_monitoring_${enddate}.txt
-gzip /data/SBCS-Informatics/monitoring/old_logs/frontend6.apocrita_monitoring_${enddate}.txt
+gzip /data/SBCS-Informatics/monitoring/old_logs/frontend6_monitoring_${enddate}.txt
 #zip up the larger txt logs
 
 echo "Moved logs for sm11, fte5/6 to /data/SBCS-Informatics/monitoring/old_logs/" | mail -s "Interactive node logging" a.larkeryd@qmul.ac.uk
