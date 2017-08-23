@@ -32,16 +32,20 @@ parser_dual = parser.add_argument_group('dual_enzyme', 'run a dual enzyme hybrid
 parser_single.add_argument("-s", "--single",
         help="run a single enzyme hybrid scaffold", action="store_true")
 
-parser_single.add_argument("-a", "--assembly",
-        help="run a single enzyme hybrid scaffold", action="store_true")
-parser_single.add_argument("-s", "--single",
-        help="run a single enzyme hybrid scaffold", action="store_true")
-parser_single.add_argument("-s", "--single",
-        help="run a single enzyme hybrid scaffold", action="store_true")
-parser_single.add_argument("-s", "--single",
-        help="run a single enzyme hybrid scaffold", action="store_true")
-parser_single.add_argument("-s", "--single",
-        help="run a single enzyme hybrid scaffold", action="store_true")
+parser_single.add_argument("-b", "--bionano_cmap",
+        help="input BioNano CMAP assembly")
+parser_single.add_argument("-o", "--output",
+        help="output folder")
+parser_single.add_argument("-r", "--refaligner",
+        help="path to refaligner program", default=PATH_TO_REFALIGNER)
+parser_single.add_argument("-c", "--merge_config",
+        help="merge configuration file [REQUIRED]")
+parser_single.add_argument("-B", "--confict_filter_B",
+        help="conflict filter level: 1 no filter, 2 cut contig at conflict, 3 exclude conflicting contig [required if not using -M option]")
+parser_single.add_argument("-N", "--conflict_filter_N",
+        help="conflict filter level: 1 no filter, 2 cut contig at conflict, 3 exclude conflicting contig [required if not using -M option]")
+parser_single.add_argument("-M", "--conflict_file",
+        help="Input a conflict resolution file indicating which NGS and BioNano conflicting contigs to be cut [optional]")
 '''
 Usage: perl hybridScaffold.pl <-h> <-n ngs_file> <-b bng_cmap_file> <-c hybrid_config_xml> <-o output_folder> <-B conflict_filter_level> <-N conflict_filter_level> <-f>
       <-m molecules_bnx> <-p de_novo_pipeline> <-q de_novo_xml> <-v> <-x> <-y> <-e noise_param><-z tar_zip_file><-S>
@@ -71,6 +75,8 @@ Usage: perl hybridScaffold.pl <-h> <-n ngs_file> <-b bng_cmap_file> <-c hybrid_c
 
 parser_dual.add_argument("-d", "--dual",
         help="run a dual enzyme hybrid scaffold", action="store_true")
+
+
 '''
 usage: runTGH.R [--] [--help] [--override] [--install] [--opts OPTS] [--BNGPath1 BNGPATH1] [--BNGPath2 BNGPATH2] [--NGSPath NGSPATH] [--OutputDir OUTPUTDIR] [--RefAlignerPath REFALIGNERPATH] [--RunFlags RUNFLAGS] [--Enzyme1 ENZYME1] [--Enzyme2 ENZYME2] [--ManualCut1 MANUALCUT1] [--ManualCut2 MANUALCUT2] [--tar TAR] [--status STATUS] paramFile
 
@@ -101,6 +107,14 @@ optional arguments:
 '''
 args = parser.parse_args()
 
+print args
+
+if args.single:
+    print "SINGLE"
+elif args.dual:
+    print "DUAL"
+else:
+    exit("CHOOSE SINGLE OR DUAL")
 
 
 '''
