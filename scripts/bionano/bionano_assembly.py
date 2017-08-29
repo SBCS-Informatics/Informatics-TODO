@@ -61,13 +61,13 @@ if args.optargs:
     new_optargs_file = "optargs_"+args.input+"_"+time_string+".xml"
     subprocess.call(["cp",args.optargs_file, new_optargs_file], shell=False)
     
-    #Set the new filename so that it is used in the run!
-    args.optargs_file=new_optargs_file
-
     #log
     logtmp="cp {} {}".format(args.optargs_file, new_optargs_file)
     logfile.write(logtmp+"\n")
-    
+ 
+    #Set the new filename so that it is used in the run!
+    args.optargs_file=new_optargs_file
+   
     if args.verbose:
         print logtmp
     
