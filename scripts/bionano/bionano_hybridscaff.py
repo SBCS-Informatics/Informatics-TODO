@@ -8,6 +8,7 @@ Author: Adrian Larkeryd, 2017
 import sys, os, time
 import subprocess
 import argparse
+import re
 
 #Defaults
 PATH_TO_REFALIGNER="/data/home/btw977/bionano_solve/REFALIGNER/5678.6119relO/avx/RefAligner"
@@ -20,7 +21,6 @@ PATH_TO_DUAL = "/data/home/btw977/bionano_solve/HybridScaffold/03062017/runTGH.R
 #Date
 time_string = time.strftime("%Y_%m_%d",time.localtime())
 
-
 #Command line argument parsing
 parser = argparse.ArgumentParser(description="Bionano assembly wrapper for Apocrita, written by Adrian Larkeryd, 2017")
 
@@ -30,6 +30,12 @@ parser.add_argument("-o", "--output",
         help="output folder")
 parser.add_argument("-r", "--refaligner",
         help="path to refaligner program", default=PATH_TO_REFALIGNER)
+parser.add_argument("-v", "--verbose", 
+        help="verbose output", action="store_true")
+parser.add_argument("--qsub", 
+        help="submit job to the queue", action="store_true")
+
+
 
 #Create parsing groups to separate options
 parser_single = parser.add_argument_group('single_enzyme', 'run a single enzyme hybrid scaffold')
@@ -81,10 +87,16 @@ Usage: perl hybridScaffold.pl <-h> <-n ngs_file> <-b bng_cmap_file> <-c hybrid_c
 parser_dual.add_argument("-d", "--dual",
         help="run a dual enzyme hybrid scaffold", action="store_true")
 
+parser_dual.add_argument("-e1", "--enzyme_1",
+        help="enzyme 1. Avalible enzymes: BspQI, BbvCI, BsmI, BsrDI, BssSI.")
+parser_dual.add_argument("-e2", "--enzyme_2",
+        help="enzyme 2. Avalible enzymes: BspQI, BbvCI, BsmI, BsrDI, BssSI.")
+
+
 parser_dual.add_argument("-b1", "--bionano_cmap_1",
-        help="input BioNano CMAP assembly for enzyme 1. Avalible enzymes: BspQI, BbvCI, BsmI, BsrDI, BssSI.")
+        help="input BioNano CMAP assembly for enzyme 1")
 parser_dual.add_argument("-b2", "--bionano_cmap_2",
-        help="input BioNano CMAP assembly for enzyme 2. Avalible enzymes: BspQI, BbvCI, BsmI, BsrDI, BssSI.")
+        help="input BioNano CMAP assembly for enzyme 2")
 
 #parser_dual.add_argument("-o", "--output",
 #        help="output folder")
@@ -92,14 +104,6 @@ parser_dual.add_argument("-b2", "--bionano_cmap_2",
 #parser_dual.add_argument("-r", "--refaligner",
 #        help="path to refaligner program binary", default=PATH_TO_REFALIGNER)
 
-parser_dual.add_argument("-c", "--merge_config",
-        help="merge configuration file [REQUIRED]")
-parser_dual.add_argument("-B", "--confict_filter_B",
-        help="conflict filter level: 1 no filter, 2 cut contig at conflict, 3 exclude conflicting contig [required if not using -M option]")
-parser_dual.add_argument("-N", "--conflict_filter_N",
-        help="conflict filter level: 1 no filter, 2 cut contig at conflict, 3 exclude conflicting contig [required if not using -M option]")
-parser_dual.add_argument("-M", "--conflict_file",
-        help="Input a conflict resolution file indicating which NGS and BioNano conflicting contigs to be cut [optional]")
 parser_dual.add_argument("--config_file",
         help="configuration file, default: "+CONFIG_FILE, default=CONFIG_FILE)
 
@@ -136,53 +140,56 @@ args = parser.parse_args()
 
 print args
 
+if args.sequence and args.output:
+    logfile = open("./"+args.sequence.split("/")[-1]+"_"+time_string+".log", "w")
+else:
+    exit("sequence and output needed")
+
 if args.single:
+    logfile.write("Single run\n")
     print "SINGLE"
+    command = ""
+    print command
 elif args.dual:
-    if not (args.b1 and args.b2 and args.sequence and args.output):
+    if not (args.bionano_cmap_1 and args.bionano_cmap_2 and args.sequence and args.output and args.refaligner and args.enzyme_1 and args.enzyme_2):
         exit("not enough arguments")
     print "DUAL"
+    logfile.write("Dual run\n")
     
     #copy xml file 
-    new_config_file = "TGH_config_"+args.sequence+"_"+time_string+".xml"
-    print new_config_file
+    new_config_file = "TGH_config_"+args.sequence.split("/")[-1]+"_"+time_string+".xml"
     subprocess.call(["cp", args.config_file, new_config_file], shell=False)
     
     #log
     logtmp="cp {} {}".format(args.config_file, new_config_file)
     logfile.write(logtmp+"\n")
-    
+    if args.verbose:
+        print logtmp
+
     #Set the new filename so that it is used in the run!
     args.config_file=new_config_file
     
-    if args.verbose:
-        print logtmp
-    
-    for i in range(5):
-        #do some sed stuff to replace the values in the optargs.xml file
-        
-        #check so that you put in numbers:
-        try:
-            tmp = float(args.optargs[i])
-        except ValueError as e:
-            print "ERROR:", e
-            exit("ERROR: not a valid float number in optargs " + optargs_order[i])
-
-        #\(.*tab="ASSEMBLE"\) was needed to only change the optargs that have to do with assembly!
-        #\1 in the replacement puts the info right back
-        default = '"-{}" val0="{}"\(.*tab="ASSEMBLE"\)'.format(optargs_order[i], optargs_default[i])
-        replace = '"-{}" val0="{}"\\1'.format(optargs_order[i], args.optargs[i])
-        subprocess.call(['sed', '-i', 's/{}/{}/g'.format(default,replace), new_optargs_file], shell=False)
-        
-        logtmp='sed -i s/{}/{}/g {}'.format(default, replace, new_optargs_file)
+    default_list = ["NGSPATH_CHANGE", "BNGPATH1_CHANGE", "BNGPATH2_CHANGE", "OUTPUT_CHANGE", "REFALIGNER_CHANGE", "ENZYME1_CHANGE", "ENYZME2_CHANGE"]
+    replace_list = [args.sequence, args.bionano_cmap_1, args.bionano_cmap_2, args.output, args.refaligner, args.enzyme_1, args.enzyme_2]
+    for i in range(0,7):
+        default = '{}'.format(default_list[i])
+        replace = '{}'.format(re.escape(replace_list[i]))
+        subprocess.call(['sed', '-i', 's/{}/{}/g'.format(default,replace), args.config_file], shell=False)
+        logtmp='sed -i s/{}/{}/g {}'.format(default, replace, args.config_file)
         logfile.write(logtmp+"\n")
         if args.verbose:
             print logtmp
 
-i
-    command = ""
+
+    command = "Rscript {} -f {}".format(PATH_TO_DUAL, args.config_file)
+    logfile.write(command+"\n")
+    if args.verbose:
+        print command
 else:
-    exit("CHOOSE SINGLE OR DUAL")
+    logfile.write("Choose single or dual run")
+    print "Choose single or dual run"
+
+logfile.close()
 
 
 '''
