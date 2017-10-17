@@ -4,7 +4,7 @@ from pwd import getpwuid
 from multiprocessing import Pool
 
 #DEFAULTS
-NUM_THREADS=8
+NUM_THREADS=20
 WRITE_HASH_TO_FILE=1
 
 ### MAIN ###
@@ -20,35 +20,43 @@ def main():
     #check root path to make sure it exists
     if os.path.isdir(sys.argv[1]):
         print "DEDUPING %s"%sys.argv[1]
-        root=sys.argv[1]
+        roots=sys.argv[1:]
     else:
         exit("%s directory does not exist"%sys.argv[1])
     
-    #List all files and directories under the root directory provided
-    list_of_files, list_of_dirs = find_all_files(root)
+    list_of_files = []
+    list_of_dirs = []
+    for root in roots:
+        #List all files and directories under the root directory provided
+        tmp_files, tmp_dirs = find_all_files(root)
+        list_of_files = list_of_files + tmp_files
+        list_of_dirs = list_of_dirs + tmp_dirs
+    
     print len(list_of_dirs), "directories"
     print len(list_of_files), "files"
-
 
     ### LOOK FOR DIRS WITH MORE THAN 100 ENTRIES IN THEM ###
     list_of_dirs_to_tar = list()
     nested_to_tar=dict()
     users_tar=list()
     for d in sorted(list_of_dirs):
-        if len(os.listdir(d))>100:
-            for dd in list_of_dirs_to_tar:
-                if dd in d:
-                    if dd in nested_to_tar.keys():
-                        nested_to_tar[dd].append(d)
-                    else:
-                        nested_to_tar[dd]=[d]
-            user = get_uid(d)
-            if user not in users_tar:
-                users_tar.append(user)
-            list_of_dirs_to_tar.append(d)
-
+        try: #Escape OSErrors caused by unreadable directories
+            if len(os.listdir(d))>100:
+                for dd in list_of_dirs_to_tar:
+                    if dd+"/" in d:
+                        if dd in nested_to_tar.keys():
+                            nested_to_tar[dd].append(d)
+                        else:
+                            nested_to_tar[dd]=[d]
+                user = get_uid(d)
+                if user not in users_tar:
+                    users_tar.append(user)
+                list_of_dirs_to_tar.append(d)
+        except OSError as e:
+            print "ERROR: ", e
     for key in nested_to_tar.keys():
         for nested_dir in nested_to_tar[key]:
+            #print key, nested_dir
             list_of_dirs_to_tar.remove(nested_dir)
 
     #print list_of_dirs_to_tar
@@ -76,7 +84,11 @@ def main():
     #Go through all the hash values and see if there are duplicates
     #Also check if the files are binary and if not add to list
     for f in list_of_hashes:
-        user=get_uid(f[2])
+        try: #Escape errors caused by unreadable files 
+            user=get_uid(f[2])
+        except OSError as e:
+            print "ERROR: ", e
+            continue
         if f[0] not in file_dict.keys():
             #if this hash is not already in the dict
             #add the hash, point to the filesize and the filename f[1:]
@@ -199,14 +211,18 @@ def is_binary(filename):
     return bool(file_part.translate(None, textchars))
 
 def multithread_run(func_to_run, args_list):
+    result_list=list()
+    for i in args_list:
+        result_list.append(func_to_run(i))
+    #return result_list
     pool = Pool(processes=NUM_THREADS)
-    results_list = list()
+    result_list = list()
     
     for i in pool.imap_unordered(func_to_run, args_list):
         if WRITE_HASH_TO_FILE:
             pass
-        results_list.append(i)
-    return results_list
+        result_list.append(i)
+    return result_list
 
 def size_of_dups(dups):
     total_size=0
@@ -242,7 +258,11 @@ def find_tmp_files(file_list):
 #SHA256 hash of file    
 #Size of file in bytes
 def hash_file(filename):
-    return [hashlib.sha256(open(filename, 'rb').read()).hexdigest(), os.path.getsize(filename), filename]
+    try: #Escape any errors caused by unreadable files IOError is from reading the file OSError from getting its size
+        return [hashlib.sha256(open(filename, 'rb').read()).hexdigest(), os.path.getsize(filename), filename]
+    except (OSError, IOError) as e:
+        print "ERROR: ", e
+        return ["ERROR_IN_HASH", 0, filename]
 
 if __name__ == "__main__":
     main()
