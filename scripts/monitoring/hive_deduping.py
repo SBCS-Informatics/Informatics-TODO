@@ -14,12 +14,12 @@ def main():
     date_string = time.strftime("%Y_%m_%d",time.localtime())
 
     #usage
-    if len(sys.argv)!=2:
+    if len(sys.argv)<2:
         exit("usage: hive_deduping.py <root folder>")
     
     #check root path to make sure it exists
     if os.path.isdir(sys.argv[1]):
-        print "DEDUPING %s"%sys.argv[1]
+        print "DEDUPING %s"%sys.argv[1:]
         roots=sys.argv[1:]
     else:
         exit("%s directory does not exist"%sys.argv[1])
