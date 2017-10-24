@@ -57,7 +57,10 @@ def main():
     for key in nested_to_tar.keys():
         for nested_dir in nested_to_tar[key]:
             #print key, nested_dir
-            list_of_dirs_to_tar.remove(nested_dir)
+            try:
+                list_of_dirs_to_tar.remove(nested_dir)
+            except ValueError as e:
+                print "ERROR: ", e
 
     #print list_of_dirs_to_tar
     #print nested_to_tar
