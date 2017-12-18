@@ -35,8 +35,8 @@ parser.add_argument("--qsub",
         help="submit job to the queue", action="store_true")
 
 #Create parsing groups to separate options
-parser_single = parser.add_argument_group('single_enzyme', 'run a single enzyme hybrid scaffold')
-parser_dual = parser.add_argument_group('dual_enzyme', 'run a dual enzyme hybrid scaffold')
+parser_single = parser.add_argument_group('Single enzyme', 'Run a single enzyme hybrid scaffold')
+parser_dual = parser.add_argument_group('Dual enzyme', 'Run a dual enzyme hybrid scaffold')
 
 ##single enzyme arugments
 parser_single.add_argument("-s", "--single",

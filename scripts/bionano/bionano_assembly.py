@@ -104,6 +104,7 @@ try:
     screen_name = os.environ['STY']
     if args.verbose:
         print screen_name
+        logfile.write("Running in screen: {}\n".format(screen_name))
 except KeyError:
     if args.noscreen:
         print "OVERRIDING not in a screen"
