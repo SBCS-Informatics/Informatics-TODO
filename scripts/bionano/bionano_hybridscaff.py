@@ -83,10 +83,13 @@ if args.single:
     if args.verbose:
         print "Single enzyme run"
     #copy xml file 
-    new_config_file = "/".join(args.sequence.split("/")[:-1])+"_hybrid_scaffold_config_"+time_string+".xml"
+    new_config_file = "/".join(args.sequence.split("/")[:-1])+"/"+args.sequence.split("/")[-1]+"_hybrid_scaffold_config_"+time_string+".xml"
     subprocess.call(["cp", args.merge_config, new_config_file], shell=False)
     args.merge_config=new_config_file
-    subprocess.call(['sed', '-i', 's/{}/{}/g'.format('flag attr="maxthreads" val0="32"','flag attr="maxthreads" val0="'+args.threads+'"'), args.config_file], shell=False)
+    
+    if args.verbose:
+        print ['sed', '-i', 's/{}/{}/g'.format('flag attr="maxthreads" val0="32"','flag attr="maxthreads" val0="'+args.threads+'"'), args.merge_config]
+    subprocess.call(['sed', '-i', 's/{}/{}/g'.format('flag attr="maxthreads" val0="32"','flag attr="maxthreads" val0="'+args.threads+'"'), args.merge_config], shell=False)
     
     if args.conflict_file:
         conflict_command = "-M {}".format(args.conflict_file)
