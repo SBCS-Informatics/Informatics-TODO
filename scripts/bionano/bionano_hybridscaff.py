@@ -33,6 +33,8 @@ parser.add_argument("-v", "--verbose",
         help="verbose output", action="store_true")
 parser.add_argument("--qsub", 
         help="submit job to the queue", action="store_true")
+parser.add_argument("-t", "--threads",
+        help="Maximum number of threads to use in computations [32]", default="32")
 
 #Create parsing groups to separate options
 parser_single = parser.add_argument_group('Single enzyme', 'Run a single enzyme hybrid scaffold')
@@ -80,7 +82,11 @@ if args.single:
     logfile.write("Single run\n")
     if args.verbose:
         print "Single enzyme run"
-    
+    #copy xml file 
+    new_config_file = "/".join(args.sequence.split("/")[:-1])+"_hybrid_scaffold_config_"+time_string+".xml"
+    subprocess.call(["cp", args.merge_config, new_config_file], shell=False)
+    args.merge_config=new_config_file
+    subprocess.call(['sed', '-i', 's/{}/{}/g'.format('flag attr="maxthreads" val0="32"','flag attr="maxthreads" val0="'+args.threads+'"'), args.config_file], shell=False)
     
     if args.conflict_file:
         conflict_command = "-M {}".format(args.conflict_file)
@@ -88,11 +94,22 @@ if args.single:
         conflict_command = "-B {} -N {}".format(args.conflict_filter_B, args.conflict_filter_N)
 
     command = "perl {} -n {} -b {} -c {} -r {} -o {} {}".format(PATH_TO_SINGLE, args.sequence, args.bionano_cmap, args.merge_config, args.refaligner, args.output, conflict_command)
-    subprocess.call(command.split(), shell=False)
+    
+    if args.qsub: 
+        qsub_file_name = "./"+args.sequence.split("/")[-1]+"_"+time_string+".sh"
+        qsub_file = open(qsub_file_name, "w")
+        qsub_file.write(command)
+        command = "qsub -pe smp "+args.threads+" -l h_rt=24:00:00 -l h_vmem="+str(128/int(args.threads)+1)+"G " + qsub_file_name
+        print "TO SUBMIT TO THE QUEUE COPY AND PASTE THIS INTO THE COMMAND LINE:"
+        print command
+    else:
+        subprocess.call(command.split(), shell=False)
     logfile.write(command+"\n")
     
     if args.verbose:
+        print "Final command"
         print command
+
 elif args.dual:
     if not (args.bionano_cmap_1 and args.bionano_cmap_2 and args.sequence and args.output and args.refaligner and args.enzyme_1 and args.enzyme_2):
         exit("You need to specify all arguments")
@@ -113,8 +130,8 @@ elif args.dual:
     #Set the new filename so that it is used in the run!
     args.config_file=new_config_file
     
-    default_list = ["NGSPATH_CHANGE", "BNGPATH1_CHANGE", "BNGPATH2_CHANGE", "OUTPUT_CHANGE", "REFALIGNER_CHANGE", "ENZYME1_CHANGE", "ENYZME2_CHANGE"]
-    replace_list = [args.sequence, args.bionano_cmap_1, args.bionano_cmap_2, args.output, args.refaligner, args.enzyme_1, args.enzyme_2]
+    default_list = ["NGSPATH_CHANGE", "BNGPATH1_CHANGE", "BNGPATH2_CHANGE", "OUTPUT_CHANGE", "REFALIGNER_CHANGE", "ENZYME1_CHANGE", "ENYZME2_CHANGE", 'flag attr="maxthreads" val0="32"']
+    replace_list = [args.sequence, args.bionano_cmap_1, args.bionano_cmap_2, args.output, args.refaligner, args.enzyme_1, args.enzyme_2, 'flag attr="maxthreads" val0="'+args.threads+'"']
     for i in range(0,len(default_list)):
         default = '{}'.format(default_list[i])
         replace = '{}'.format(re.escape(replace_list[i]))
