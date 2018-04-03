@@ -31,7 +31,7 @@ software_unavailable = list()
 #Go through all software
 for soft in software:
     
-    if soft[0] == "#" or soft == "":
+    if soft == "" or soft[0] == "#": #NOTE: works because of lazy python, will not check second bit if first is true
          continue #Comment line should not be used
 
     if args.verbose:
