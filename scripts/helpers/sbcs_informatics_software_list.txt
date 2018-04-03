@@ -26,7 +26,7 @@ quast
 bedtools
 genometools
 vcftools
-sratools
+sra-tools
 
 #Variant calling
 gatk
@@ -38,7 +38,6 @@ mothur
 
 #Aligners
 blast
-guidance
 clustalw
 mafft
 muscle
