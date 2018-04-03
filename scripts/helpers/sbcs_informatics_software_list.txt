@@ -6,6 +6,7 @@
 spades
 soapdenovo2
 abyss
+mira
 canu
 
 #Short read mappers:
@@ -25,6 +26,7 @@ quast
 bedtools
 genometools
 vcftools
+sratools
 
 #Variant calling
 gatk
@@ -36,6 +38,15 @@ mothur
 
 #Aligners
 blast
+guidance
 clustalw
 mafft
 muscle
+
+#Trees
+raxml
+mrbayes
+
+#Annotation
+maker
+augustus
