@@ -1,0 +1,41 @@
+##List of software to be downloaded as containers with python script pull_containers.py
+##Author: Adrian Larkeryd 2018
+##Notable software exceptions in 2018-04: QIIME2, R packages
+
+#Assemblers:
+spades
+soapdenovo2
+abyss
+canu
+
+#Short read mappers:
+bowtie2
+bwa
+star
+
+#QC and data wrangling tools
+fastqc
+trimmomatic
+khmer
+kmc
+samtools
+picard
+seqtk
+quast
+bedtools
+genometools
+vcftools
+
+#Variant calling
+gatk
+gatk4
+
+#Metagenomics
+qiime
+mothur
+
+#Aligners
+blast
+clustalw
+mafft
+muscle
