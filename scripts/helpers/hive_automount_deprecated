@@ -1,0 +1,100 @@
+#!/bin/bash
+##
+#Hive connection script
+#Creates sshfs mount of Hive on Apocrita
+#
+#Author: Adrian Larkeryd, 2016
+##
+
+if [[ $HOSTNAME =~ (frontend5.apocrita)|(frontend6)|(sm11) ]]; then
+  #SSHFS mounting is only available on these three hosts - No need to try on any others
+  echo -e "Connecting to Hive ... "
+
+  #First a check if the user is in the Hive-Users group, ie has access
+  if [ ! $(groups | grep -o "Hive-Users") ]; then
+    if [ ! -e ~/.ssh/id_rsa.pub ]; then
+  	  #If the user doesnt already have an ssh key pair one needs to be generated
+	  echo -e "\nNot a Hive user yet - Please create an SSH key pair for Hive access"
+	  echo -e "\nPlease use the default location setting for the key files - the public key will be automatically sent to SBCS-Informatics"
+	  ssh-keygen
+	
+	  #Key created with ssh-keygen, hopefully the user followed instructions and saved it in its default location
+	  #Will now email Adrian and ITSR with the public key
+
+	  cat ~/.ssh/id_rsa.pub | mail -s "AUTOMATED HIVE KEY for `whoami`" a.larkeryd@qmul.ac.uk
+	  #cat ~/.ssh/id_rsa.pub | mail -s "AUTOMATED HIVE KEY for `whoami`" its-research-support@qmul.ac.uk
+	  echo `whoami` >> /data/SBCS-Informatics/hive/.hivekeys
+	
+	  #Append the public key to a control file. This file is used to not send several email - IMPORTANT!
+	  cat ~/.ssh/id_rsa.pub >> /data/SBCS-Informatics/hive/.hivekeys
+
+	  echo -e "\nYour public key has been sent for processing!"
+    else
+	  #This means there is already an ssh key pair in the default location - lets use those
+
+      if grep -q `whoami` /data/SBCS-Informatics/hive/.hivekeys ; then
+	    #Checking the control file to see if we have already sent an email - IMPORTANT!
+        echo -e "Waiting for Hive access processing"
+      else
+	    #Key not in control file - send email and add to control file just like above
+	    echo -e "\nNot a Hive user yet - Will send your default public SSH key for Hive access"
+	    echo `whoami` >> /data/SBCS-Informatics/hive/.hivekeys
+	    cat ~/.ssh/id_rsa.pub | mail -s "AUTOMATED HIVE KEY for `whoami`" a.larkeryd@qmul.ac.uk
+	    #cat ~/.ssh/id_rsa.pub | mail -s "AUTOMATED HIVE KEY for `whoami`" its-research-support@qmul.ac.uk
+	    cat ~/.ssh/id_rsa.pub >> /data/SBCS-Informatics/hive/.hivekeys
+	    echo -e "\nYour public key has been sent for processing!"
+      fi
+    fi
+    #Exiting the script here - No need to go further since the user is NOT a Hive user yet
+    exit
+  fi
+
+  #The user is a Hive user and should thus have access to log in to Hive
+
+  
+  #Setting up the directory structure which will host the sshfs mount
+  #~/.hive_mountpoint		This is the mount point for the sshfs mount
+  #~/hive					This directory will have links to all the group shares the user has access to
+  #~/archive_hive			This is a link to the first group share (made for people with only one group share)
+  #							The reason for this is for people to have straight access to their group share
+  #							instead of having to go through ~/hive/
+
+  if [ ! -e ~/.hive_mountpoint ]; then
+    mkdir ~/.hive_mountpoint
+    fusermount -q -u .hive_mountpoint
+  fi
+  if [ ! -e ~/hive ]; then
+    mkdir hive
+  fi
+
+  #Checking if the mount is there already - this would mean we do not have to do anything
+  if [ -e ~/.hive_mountpoint/bin ]; then
+    echo -e "Hive archive available at ~/hive/"
+  else
+	#If the directory isnt available, then we try to mount
+    sshfs hive-master.hpc.qmul.ac.uk:/ ~/.hive_mountpoint
+    if [ ! -e ~/.hive_mountpoint/bin ]; then
+	  #If the directory is still not available after the mount try something is wrong
+      echo -e "Failed to connect to Hive, have you got your keys loaded?"
+	  #Also try to run an unmount just in case
+      fusermount -q -u .hive_mountpoint
+      exit
+    else
+      echo -e "Hive archive available at ~/hive/"
+    fi
+  fi
+  #Set up all the links correctly so that people dont have to look for .hive_mountpoint
+  for group in $(groups); do
+    if [ -e ~/.hive_mountpoint/$group ]; then
+      if [ ! -e ~/hive/$group ]; then
+        ln -s ~/.hive_mountpoint/$group ~/hive/$group
+      fi
+      if [ ! -e ~/archive_hive ]; then
+        ln -s ~/.hive_mountpoint/$group ~/archive_hive
+      fi
+    fi
+  done
+else
+  #If the user is on another host, inform the user where the mount should be available
+  echo -e "Hive archive not available on $HOSTNAME, for access log on to sm11, frontend5 or frontend6"
+fi

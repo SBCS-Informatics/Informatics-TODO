@@ -1,0 +1,1 @@
+echo "Hive has been integrated into GPFS and this automounting script has been deprecated. Please remove it from your configuration - it has no function."

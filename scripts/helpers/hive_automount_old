@@ -1,0 +1,35 @@
+#!/bin/bash
+if [ "$HOSTNAME" = sm11 ]; then
+     if [ ! -e ~/.hive_mountpoint ]; then
+       mkdir ~/.hive_mountpoint
+       fusermount -q -u .hive_mountpoint
+     fi
+     if [ ! -e ~/hive ]; then
+       mkdir hive
+     fi
+     if [ -e ~/.hive_mountpoint/bin ]; then
+         echo "Hive archive available at ~/hive/"
+     else
+         echo "Connecting to Hive ... "
+         sshfs hive-master.hpc.qmul.ac.uk:/ ~/.hive_mountpoint
+         if [ ! -e ~/.hive_mountpoint/bin ]; then
+           echo "Failed to connect to Hive, have you got your keys loaded?"
+           fusermount -q -u .hive_mountpoint
+           exit
+         else
+           echo "Hive archive available at ~/hive/"
+         fi
+     fi
+     for group in $(groups); do
+       if [ -e ~/.hive_mountpoint/$group ]; then
+         if [ ! -e ~/hive/$group ]; then
+           ln -s ~/.hive_mountpoint/$group ~/hive/$group
+         fi
+         if [ ! -e ~/archive ]; then
+           ln -s ~/.hive_mountpoint/$group ~/archive
+         fi
+       fi
+     done
+else
+     echo "Hive archive not available on $HOSTNAME, for access log on to sm11"
+fi
