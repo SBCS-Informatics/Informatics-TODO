@@ -5,6 +5,9 @@ from subprocess import call
 
 t_zero = time.time()
 
+if len(sys.argv) != 2:
+    exit("usage: qacct_pyget.py <username>")
+
 tmpfile = "tmp_qacct_{}.txt".format(binascii.b2a_hex(os.urandom(15)))
 
 call(["qacct -o {} -j > /tmp/{}".format(sys.argv[1], tmpfile)], shell=True)

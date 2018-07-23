@@ -4,7 +4,7 @@ from pwd import getpwuid
 from multiprocessing import Pool
 
 #DEFAULTS
-NUM_THREADS=20
+NUM_THREADS=10
 WRITE_HASH_TO_FILE=1
 
 ### MAIN ###
@@ -262,6 +262,9 @@ def find_tmp_files(file_list):
 #Size of file in bytes
 def hash_file(filename):
     try: #Escape any errors caused by unreadable files IOError is from reading the file OSError from getting its size
+        if os.path.getsize(filename) > 2000000000:
+            print "File too large:", filename
+            return ["ERROR_IN_HASH_SIZE", 0, filename]
         return [hashlib.sha256(open(filename, 'rb').read()).hexdigest(), os.path.getsize(filename), filename]
     except (OSError, IOError) as e:
         print "ERROR: ", e
