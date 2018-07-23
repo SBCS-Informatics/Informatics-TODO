@@ -11,11 +11,11 @@ import argparse
 import re
 
 #Defaults
-PATH_TO_REFALIGNER="/data/home/btw977/bionano_solve/REFALIGNER/5678.6119relO/avx/RefAligner"
+PATH_TO_REFALIGNER="/data/home/btw977/bionano_solve/RefAligner/6700.6902rel/sse/RefAligner"
 CONFIG_FILE="/data/home/btw977/bionano_configs/TGH_config_apoc.xml"
 
-PATH_TO_SINGLE = "/data/home/btw977/bionano_solve/HybridScaffold/03062017/hybridScaffold.pl"
-PATH_TO_DUAL = "/data/home/btw977/bionano_solve/HybridScaffold/03062017/runTGH.R"
+PATH_TO_SINGLE = "/data/home/btw977/bionano_solve/HybridScaffold/08212017/hybridScaffold.pl"
+PATH_TO_DUAL = "/data/home/btw977/bionano_solve/HybridScaffold/08212017/runTGH.R"
 
 #Date
 time_string = time.strftime("%Y_%m_%d",time.localtime())
@@ -35,6 +35,8 @@ parser.add_argument("--qsub",
         help="submit job to the queue", action="store_true")
 parser.add_argument("-t", "--threads",
         help="Maximum number of threads to use in computations [32]", default="32")
+parser.add_argument("--additional_args", 
+        help="any additional arguments you want to send to the pipeline, please put these in quotes", default="")
 
 #Create parsing groups to separate options
 parser_single = parser.add_argument_group('Single enzyme', 'Run a single enzyme hybrid scaffold')
@@ -53,6 +55,7 @@ parser_single.add_argument("-N", "--conflict_filter_N",
         help="conflict filter level: 1 no filter, 2 cut contig at conflict, 3 exclude conflicting contig [required if not using -M option]")
 parser_single.add_argument("-M", "--conflict_file",
         help="Input a conflict resolution file indicating which NGS and BioNano conflicting contigs to be cut [optional]")
+
 ##dual enzyme arguments
 parser_dual.add_argument("-d", "--dual",
         help="run a dual enzyme hybrid scaffold", action="store_true")
@@ -96,7 +99,7 @@ if args.single:
     elif args.conflict_filter_B and args.conflict_filter_N:
         conflict_command = "-B {} -N {}".format(args.conflict_filter_B, args.conflict_filter_N)
 
-    command = "perl {} -n {} -b {} -c {} -r {} -o {} {}".format(PATH_TO_SINGLE, args.sequence, args.bionano_cmap, args.merge_config, args.refaligner, args.output, conflict_command)
+    command = "perl {} -n {} -b {} -c {} -r {} -o {} {} {}".format(PATH_TO_SINGLE, args.sequence, args.bionano_cmap, args.merge_config, args.refaligner, args.output, args.additional_args, conflict_command)
     
     if args.qsub: 
         qsub_file_name = "./"+args.sequence.split("/")[-1]+"_"+time_string+".sh"
@@ -145,7 +148,7 @@ elif args.dual:
             print logtmp
 
 
-    command = "Rscript {} -f {}".format(PATH_TO_DUAL, args.config_file)
+    command = "Rscript {} -f {} {}".format(PATH_TO_DUAL, args.config_file, args.additional_args)
     subprocess.call(command.split(), shell=False)
     logfile.write(command+"\n")
     if args.verbose:

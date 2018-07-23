@@ -14,10 +14,10 @@ import subprocess
 import argparse
 
 #Defaults
-PATH_TO_REFALIGNER="/data/home/btw977/bionano_solve/REFALIGNER/5678.6119relO/avx/"
-PATH_TO_PIPELINECL="/data/home/btw977/bionano_solve/PIPELINE/Pipeline/pipelineCL.py"
-PATH_TO_CLUSTERARGS="/data/autoScratch/monthly/btw977/bionano_assembly_test/clusterArguments_APOCRITA.xml"
-PATH_TO_OPTARGS="/data/autoScratch/monthly/btw977/bionano_assembly_test/optArgs.xml"
+PATH_TO_REFALIGNER="/data/home/btw977/bionano_solve/RefAligner/6700.6902rel/sse"
+PATH_TO_PIPELINECL="/data/home/btw977/bionano_solve/Pipeline/08212017/pipelineCL.py"
+PATH_TO_CLUSTERARGS="/data/home/btw977/bionano_configs/clusterArguments_APOCRITA.xml"
+PATH_TO_OPTARGS="/data/home/btw977/bionano_configs/optArgs.xml"
 
 #Date
 time_string = time.strftime("%Y_%m_%d",time.localtime())
@@ -37,7 +37,7 @@ parser.add_argument("--optargs", metavar=("FP", "FN", "sd", "sf", "sr"),
 parser.add_argument("--optargs_file",
         help="path to the optargs file that is used (and changed if --optargs is specified)", default=PATH_TO_OPTARGS)
 parser.add_argument("--reference",
-        help="reference .cmap file, for comparison")
+        help="reference .cmap file for comparison")
 parser.add_argument("--refaligner",
         help="path to the refaligner binaries directory", default=PATH_TO_REFALIGNER)
 parser.add_argument("--pipelineCL",
@@ -48,6 +48,12 @@ parser.add_argument("-v", "--verbose",
         help="increase output verbosity", action="store_true")
 parser.add_argument("--noscreen", 
         help="override the screen requirement", action="store_true")
+parser.add_argument("--autonoise", 
+        help="run the bionano autonoise step", action="store_true")
+parser.add_argument("--additional_args", 
+        help="any additional arguments you want to send to the bionano solve pipeline, please put these in quotes", default="")
+
+
 
 args = parser.parse_args()
 
@@ -92,10 +98,17 @@ if args.optargs:
         if args.verbose:
             print logtmp
 
+extra_args = ""
+
+if args.autonoise:
+	extra_args += " -y "
+if args.additional_args:
+	extra_args += args.additional_args
+
 if args.reference:
-    command = "/share/apps/iryssolve/utils/drmaapywrapper.sh {} -l {} -a {} -b {} -t {} -C {} -T -r {} 32 -j 16".format(args.pipelineCL, args.output, args.optargs_file, args.input, args.refaligner, args.clusterargs, args.reference)
+    command = "/share/apps/iryssolve/utils/drmaapywrapper.sh {} -l {} -a {} -b {} -t {} -C {} -r {} {} -T 32 -j 32".format(args.pipelineCL, args.output, args.optargs_file, args.input, args.refaligner, args.clusterargs, args.reference, extra_args)
 else:
-    command = "/share/apps/iryssolve/utils/drmaapywrapper.sh {} -l {} -a {} -b {} -t {} -C {} -T 32 -j 16".format(args.pipelineCL, args.output, args.optargs_file, args.input, args.refaligner, args.clusterargs)
+    command = "/share/apps/iryssolve/utils/drmaapywrapper.sh {} -l {} -a {} -b {} -t {} -C {} {} -T 32 -j 32".format(args.pipelineCL, args.output, args.optargs_file, args.input, args.refaligner, args.clusterargs, extra_args)
 
 #run command
 if args.verbose:
