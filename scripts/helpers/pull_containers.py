@@ -19,9 +19,9 @@ software = [line.rstrip() for line in open(args.software_list, "r")]
 #Open a file that will be used to write some shell commands in. This file will later be ran by subprocess from this script
 shellscript_file = open(args.software_list + ".sh", "w")
 #First thing in the shellscript file is that singularity will have to be loaded
-shellscript_file.write("module load singularity/2.4.2\n")
+shellscript_file.write("module load singularity\n")
 if args.verbose:
-    print "module load singularity/2.4.2"
+    print "module load singularity"
 
 #Will contain container names
 containers = list()
